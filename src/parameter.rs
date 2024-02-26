@@ -356,6 +356,7 @@ impl Parameters {
         value: Value,
         read_only: bool,
         description: Option<String>,
+        additional_constraints: Option<String>,
     ) -> Result<(), DynError> {
         if value == Value::NotSet {
             Err("Value::NotSet cannot be used as a statically typed value".into())
@@ -392,6 +393,7 @@ impl Parameters {
                 read_only,
                 false,
                 description.unwrap_or_else(|| name.clone()),
+                additional_constraints.unwrap_or_else(|| "".to_string()),
             );
             self.params.insert(name, param);
             Ok(())
@@ -404,6 +406,7 @@ impl Parameters {
         value: Value,
         read_only: bool,
         description: Option<String>,
+        additional_constraints: Option<String>,
     ) -> Result<(), DynError> {
         if let Some(param) = self.params.get_mut(&name) {
             if !param.descriptor.dynamic_typing {
@@ -428,6 +431,7 @@ impl Parameters {
                 read_only,
                 true,
                 description.unwrap_or_else(|| name.clone()),
+                additional_constraints.unwrap_or_else(|| "".to_string()),
             );
             self.params.insert(name, param);
         }
@@ -522,11 +526,11 @@ pub struct Parameter {
 }
 
 impl Parameter {
-    fn new(value: Value, read_only: bool, dynamic_typing: bool, description: String) -> Self {
+    fn new(value: Value, read_only: bool, dynamic_typing: bool, description: String, additional_constraints: String) -> Self {
         Self {
             descriptor: Descriptor {
                 description,
-                additional_constraints: "".to_string(),
+                additional_constraints,
                 read_only,
                 dynamic_typing,
                 floating_point_range: None,
@@ -551,7 +555,7 @@ impl Parameter {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum Value {
     NotSet,
     Bool(bool),
